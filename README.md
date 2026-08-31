@@ -82,7 +82,7 @@ and that decision doubles as the case-base retention gate.
   signatures), which is sub-second at the current scale but grows
   combinatorially. Scaling to a larger tool vocabulary or deeper chains would
   mean replacing it with a SAT-based bounded synthesizer in the style of
-  [APE](https://github.com/sanctuuary/APE), as used by the original QuAnGIS
+  [APE](https://github.com/sanctuuary/APE), as used by the original [QuAnGIS](https://github.com/quangis)
   pipeline.
 - - **Vector only.** All registered operations are GeoPandas vector
   computations.To do: raster tooling (rasterio-backed operations and raster layer
