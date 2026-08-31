@@ -24,13 +24,13 @@ semantics and abstraction vocabulary this system builds on.
 
 ```mermaid
 flowchart LR
-    Q[Question] --> I[Interpretation + grounding]
+    Q[Question] --> I[LLM paresing + data grounding]
     I --> RT{Case base hit?}
     RT -- exact --> RP[Replay accepted workflow]
-    RT -- miss --> P[Free composition]
+    RT -- miss --> P[LLM Free composition]
     P --> V{CCD/CCT validation}
     V -- diagnostics --> P
-    P -- budget spent --> E[Skeleton enumeration + selection]
+    P -- budget spent --> E[GIS-workflow enumeration + LLM selection]
     E --> V
     RP --> V
     V -- pass --> X[In-process GeoPandas execution]
@@ -55,7 +55,7 @@ validator:
    operation contracts, with a bounded diagnostic-driven repair loop.
 3. **Type-directed enumeration** — when composition keeps failing, a bounded
    forward-chaining search (the validator's type judgement run as a
-   generator) enumerates every well-typed skeleton and the LLM selects by
+   generator) enumerates every well-typed GIS-workflow and the LLM selects by
    intent.
 
 Runtime and answer-contract failures are part of the repair surface too: a
@@ -76,6 +76,15 @@ and that decision doubles as the case-base retention gate.
   public sports locations, sports providers, gymnasiums, and swimming pools —
   ingested from official Amsterdam WFS services as immutable catalog
   snapshots.
+- - **GIS workflow enumeration is explicit BFS, not SAT-based synthesis.** The
+  type-directed fallback enumerates well-typed candidate GIS workflows by
+  bounded breadth-first forward chaining (depth ≤ 4 over 55 abstraction
+  signatures), which is sub-second at the current scale but grows
+  combinatorially. Scaling to a larger tool vocabulary or deeper chains would
+  mean replacing it with a SAT-based bounded synthesizer in the style of
+  [APE](https://github.com/sanctuuary/APE), as used by the original QuAnGIS
+  pipeline.
+- 
 - Questions outside this scope are rejected with diagnostics rather than
   answered.
 
