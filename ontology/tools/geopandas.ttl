@@ -1,0 +1,222 @@
+# SPDX-License-Identifier: GPL-3.0-only
+
+# GeoPandas tool registry — the concrete layer of the Tool Ontology.
+# This project's counterpart of quangis-workflow's arcgis.ttl (which is
+# deliberately not vendored here).
+#
+# Contents:
+#   1. :Unit entries — one per allow-listed GeoPandas operation, carrying the
+#      operation id in dcterms:identifier (what the Executor dispatches on in
+#      geopandas_runner.py; contracts live in tool_registry.py).
+#   2. :implementation triples — link Abstractions from the vendored
+#      abstract.ttl to these units. They live in this file so abstract.ttl
+#      stays untouched; abstract.ttl's own :implementation links (pointing at
+#      ArcGIS tools) are ignored by this project.
+#   3. Abstractions needing a :Multi chain (to be authored when a driving
+#      question requires them).
+#   4. Abstractions with no implementation in the registry: raster and
+#      network analysis are out of scope (no raster layer exists in the
+#      catalog, and GeoPandas has no network solver) — adopt rasterio /
+#      networkx only when such a driving question appears.
+
+@prefix : <https://quangis.github.io/vocab/tool#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix abstr: <https://quangis.github.io/tool/abstract#> .
+@prefix gpd: <https://geoqa-agent.org/tool/geopandas#> .
+
+# 1. Concrete GeoPandas operations ###########################################
+
+## Selection / extraction
+
+gpd:FilterByExpression a :Unit ;
+    dcterms:identifier "geopandas:filterbyexpression" ;
+    rdfs:comment "Extracts features matching a pandas query expression (attribute predicates, boolean logic, null checks)." .
+
+gpd:SelectByLocation a :Unit ;
+    dcterms:identifier "geopandas:selectbylocation" ;
+    rdfs:comment "Extracts features by spatial predicate (intersects, within, contains, ...) against a reference layer." .
+
+gpd:SelectWithinDistance a :Unit ;
+    dcterms:identifier "geopandas:selectwithindistance" ;
+    rdfs:comment "Extracts features lying within a given distance of a reference layer's features." .
+
+## Geometry & overlay
+
+gpd:Clip a :Unit ;
+    dcterms:identifier "geopandas:clip" ;
+    rdfs:comment "Clips a vector layer by the polygons of an overlay layer." .
+
+gpd:Buffer a :Unit ;
+    dcterms:identifier "geopandas:buffer" ;
+    rdfs:comment "Vector buffer; distance in layer CRS units (EPSG:28992 = metres)." .
+
+gpd:Overlay a :Unit ;
+    dcterms:identifier "geopandas:overlay" ;
+    rdfs:comment "Set operation of two vector layers: intersection, difference (ArcGIS Erase equivalent), union, symmetric_difference, or identity." .
+
+gpd:Dissolve a :Unit ;
+    dcterms:identifier "geopandas:dissolve" ;
+    rdfs:comment "Dissolves features into single features, optionally grouped by attribute." .
+
+gpd:MergeLayers a :Unit ;
+    dcterms:identifier "geopandas:mergelayers" ;
+    rdfs:comment "Concatenates two vector layers into one." .
+
+gpd:Centroids a :Unit ;
+    dcterms:identifier "geopandas:centroids" ;
+    rdfs:comment "Point centroids of features (ArcGIS FeatureToPoint equivalent)." .
+
+## Attribute operations & joins
+
+gpd:CalculateField a :Unit ;
+    dcterms:identifier "geopandas:calculatefield" ;
+    rdfs:comment "Computes a new attribute from a pandas eval expression; _area and _length pseudo-columns carry geometry measurements. Replaces ArcGIS AddField+CalculateField chains." .
+
+gpd:AddGeometryAttributes a :Unit ;
+    dcterms:identifier "geopandas:addgeometryattributes" ;
+    rdfs:comment "Adds geometry measurements (area, perimeter) as attributes." .
+
+gpd:RenameField a :Unit ;
+    dcterms:identifier "geopandas:renamefield" ;
+    rdfs:comment "Renames an attribute field (ArcGIS AlterField equivalent)." .
+
+gpd:OrderBy a :Unit ;
+    dcterms:identifier "geopandas:orderby" ;
+    rdfs:comment "Stably sorts vector features by one attribute with explicit null placement." .
+
+gpd:JoinAttributes a :Unit ;
+    dcterms:identifier "geopandas:joinattributes" ;
+    rdfs:comment "Joins another layer's attributes by key field (ArcGIS JoinField equivalent)." .
+
+gpd:SJoin a :Unit ;
+    dcterms:identifier "geopandas:sjoin" ;
+    rdfs:comment "Joins attributes from features in another layer by spatial predicate (one-to-many or first match)." .
+
+gpd:SJoinNearest a :Unit ;
+    dcterms:identifier "geopandas:sjoinnearest" ;
+    rdfs:comment "Joins each feature to its nearest neighbour(s) in another layer, adding the distance and retaining all exact ties (ArcGIS Near equivalent)." .
+
+## Aggregation & statistics
+
+gpd:CountPointsInPolygon a :Unit ;
+    dcterms:identifier "geopandas:countpointsinpolygon" ;
+    rdfs:comment "Adds a strictly-within point-count attribute (optionally distinct by a class field) to every polygon, including explicit zeros." .
+
+gpd:Aggregate a :Unit ;
+    dcterms:identifier "geopandas:aggregate" ;
+    rdfs:comment "Aggregates features (grouped or all-into-one) with one per-field statistic such as sum (ArcGIS SummaryStatistics equivalent)." .
+
+## Composite chains
+
+gpd:SpatialCountDistinctWithin a :Multi ;
+    rdfs:comment "Strict-within diagnostic split followed by distinct-id point counting over every support." ;
+    :action [ :apply gpd:SJoin ;
+            :input [ :id "1" ],
+                [ :id "2" ] ;
+            :output _:strictlyWithinPoints ],
+        [ :apply gpd:CountPointsInPolygon ;
+            :input _:strictlyWithinPoints,
+                [ :id "2" ] ;
+            :output [ ] ] .
+
+gpd:EuclideanNearestPointPairs a :Multi ;
+    rdfs:comment "Cartesian nearest point join retaining ties (distance column named directly), then normalizing the source identity field." ;
+    :action [ :apply gpd:SJoinNearest ;
+            :input [ :id "1" ],
+                [ :id "2" ] ;
+            :output _:nearestJoined ],
+        [ :apply gpd:RenameField ;
+            :input _:nearestJoined ;
+            :output [ ] ] .
+
+# 2. Abstraction -> GeoPandas implementation links ###########################
+# Subjects are Abstractions defined in the vendored abstract.ttl.
+
+## Buffering
+abstr:ObjectBuffer :implementation gpd:Buffer .
+
+## Selection by attribute / id / value (ArcGIS SelectLayerByAttribute & FC2FC family)
+abstr:SelectLayerByAttributeLineObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByAttributePlainRegionObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByAttributePointObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByAttributeTessObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByObjectLineObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByObjectPlainRegionObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByObjectPointObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByObjectTessObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByRatioLineObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByRatioPlainRegionObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByRatioPointObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByRatioTessObjects :implementation gpd:FilterByExpression .
+abstr:SelectLayerByRatioGEQPlainRegionObjects :implementation gpd:FilterByExpression .
+abstr:FC2FCObjectTess :implementation gpd:FilterByExpression .
+abstr:SelectFeaturesByObjectPlainRegionObjects :implementation gpd:FilterByExpression .
+abstr:SelectFeaturesCoverageToExistenceVector :implementation gpd:FilterByExpression .
+abstr:SelectLayerCoverageToExistenceVector :implementation gpd:FilterByExpression .
+abstr:SelectLayerContourToExistenceVector :implementation gpd:FilterByExpression .
+
+## Selection by location / distance / extent
+abstr:SelectLayerByLocationLineObjects :implementation gpd:SelectByLocation .
+abstr:SelectLayerByLocationPlainRegionObjects :implementation gpd:SelectByLocation .
+abstr:SelectLayerByLocationPointObjects :implementation gpd:SelectByLocation .
+abstr:SelectLayerByLocationTessObjects :implementation gpd:SelectByLocation .
+abstr:SelectLayerByLocationPlainRegionObjectsFieldDist :implementation gpd:SelectByLocation .
+abstr:SelectLayerByLocationPlainRegionObjectsDist :implementation gpd:SelectWithinDistance .
+abstr:SelectObjectbyExtent :implementation gpd:SelectByLocation .
+abstr:NearPointObjects :implementation gpd:EuclideanNearestPointPairs .
+
+## Clip / erase
+abstr:ClipBoolFieldVector2Extent :implementation gpd:Clip .
+abstr:ClipNomFieldVector2Extent :implementation gpd:Clip .
+abstr:ClipObject2Object :implementation gpd:Clip .
+abstr:EraseFieldExtentfromFieldVector :implementation gpd:Overlay .
+
+## Attribute calculation & joins
+abstr:AddObjectVectorRegionArea :implementation gpd:AddGeometryAttributes .
+abstr:CalculateProd :implementation gpd:CalculateField .
+abstr:CalculateProdPointObjects :implementation gpd:CalculateField .
+abstr:CalculateObjectSpatialAmount :implementation gpd:CalculateField .
+abstr:LoadAmountonObjects :implementation gpd:JoinAttributes .
+
+## Dissolve / merge / summary
+abstr:MergeObjects :implementation gpd:Dissolve .
+abstr:SummaryStatisticsAmount :implementation gpd:Aggregate .
+abstr:ObjectSummaryStatisticsAmount :implementation gpd:Aggregate .
+
+## Spatial joins
+abstr:SpatialJoinCountTess :implementation gpd:SpatialCountDistinctWithin .
+
+# 3. Abstractions still needing a :Multi chain (author when a driving ########
+#    question requires them; multi.ttl shows the RDF pattern to follow)
+#
+# abstr:SpatialJoinAmountSumTessCount      sjoin + aggregate + joinattributes
+# abstr:SpatialJoinAmountSumTessRatio      sjoin + aggregate + joinattributes
+# abstr:SpatialJoinSumTessCount            sjoin + aggregate + joinattributes
+# abstr:SpatialJoinSumTessRatio            sjoin + aggregate + joinattributes
+# abstr:SpatialJoinMeanTessCount           sjoin + aggregate + joinattributes
+# abstr:SpatialJoinMeanTessInterval        sjoin + aggregate + joinattributes
+# abstr:SpatialJoinMeanTessRatio           sjoin + aggregate + joinattributes
+# abstr:CalculateObjectAttrRatio           two layers -> join + calculatefield
+# abstr:CalculateCountAmountRatio          two layers -> join + calculatefield
+# abstr:CalculateObjectVectorCountAmountRatio  two layers -> join + calculatefield
+# abstr:CalculatePartialAmountsfromObjects clip + area proportion + calculatefield
+# abstr:CalculateVectorFieldAreaPercentage overlay + addgeometryattributes + calculatefield
+# abstr:CalculateVectorFieldPartialArea    addgeometryattributes + calculatefield
+# abstr:IntersectDissolveField2Object      overlay + dissolve + joinattributes
+# abstr:MakePointMeasuresFromTable         needs a table-to-points operation
+#                                          (no non-spatial table layer exists in the catalog)
+#
+# 4. Not implementable with the GeoPandas registry ###########################
+#    Raster analysis (no raster layer exists in the catalog; adopt rasterio
+#    when one does): abstr:Slope, abstr:Aspect, abstr:IDWInterval,
+#    abstr:ClipFieldRaster2ObjectExtent, abstr:LocalMapAlgebra*, abstr:con1-3,
+#    abstr:VelocityFieldDEM, abstr:RasterToIsoRaster, abstr:ZonalStatistics*,
+#    abstr:RegionFromRasterExtent, abstr:ContourToFieldRaster,
+#    abstr:CoverageToNominalFieldRaster, abstr:RasterToContourInterval,
+#    abstr:ExtractByMask, abstr:ZonalStatisticsSize.
+#    Network analysis (GeoPandas has no network solver; adopt networkx/osmnx
+#    when needed): abstr:ClosestFacilityAnalysis, abstr:BuildNetwork.
+#    Hydrology (out of scope; Amsterdam is flat): abstr:KrigingInterval,
+#    abstr:FlowDirection, abstr:FlowAccumulation, abstr:FlowLength,
+#    abstr:Watershed, abstr:SnapPourPoint, abstr:CreateUnitHydrograph.

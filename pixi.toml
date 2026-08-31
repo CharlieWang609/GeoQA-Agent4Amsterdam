@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: GPL-3.0-only
+
+[workspace]
+authors = ["C.Wang <clwang0609@gmail.com>"]
+channels = ["conda-forge"]
+name = "GeoQA-Agent"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+test = "pytest test"
+typecheck = "MYPYPATH=src mypy app scripts src"
+test-web = "npm --prefix app/web test -- --run"
+typecheck-web = "npm --prefix app/web run typecheck"
+build-web = "npm --prefix app/web run build"
+ingest-showcase-catalog = "python scripts/ingest_showcase_catalog.py"
+annotate-metadata = "python scripts/annotate_metadata.py"
+inspect-sandbox = "python scripts/inspect_sandbox.py"
+cloud-sandbox = "python scripts/run_cloud_sandbox.py"
+local-sandbox = "python scripts/run_local_sandbox.py"
+
+[dependencies]
+python = "3.13.*"
+rdflib = ">=7"
+pytest = ">=8"
+pyarrow = ">=21"
+pyproj = ">=3.7"
+shapely = ">=2.1"
+geopandas = ">=1.1"
+mypy = ">=1.17"
+types-shapely = "*"
+types-geopandas = "*"
+pandas-stubs = "*"
+pyarrow-stubs = "*"
+httpx = ">=0.28"
+fastapi = ">=0.141.1,<0.142"
+pydantic = ">=2.11"
+uvicorn = ">=0.35"
+
+[pypi-dependencies]
+# PyPI's transforge (0.2.1) is stale — the vendored cct.py ecosystem needs the
+# git version (quangis-workflow itself installs it from git). Locked via pixi.lock.
+transforge = { git = "https://github.com/quangis/transforge.git" }
+azure-storage-blob = ">=12.26"
+azure-identity = ">=1.24"
+geoqa-agent = { path = ".", editable = true }
+azure-storage-file-datalake = ">=12.25.0, <13"

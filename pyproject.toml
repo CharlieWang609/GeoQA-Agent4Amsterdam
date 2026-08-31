@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-only
+
+[project]
+name = "geoqa-agent"
+version = "0.1.0"
+description = "Ontology-constrained LLM-based GIS agent for geo-analytical question answering"
+requires-python = ">=3.13"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "app",
+    "src/data_pipeline",
+    "src/geoqa_agent",
+    "src/metadata_annotation",
+]
+
+[tool.mypy]
+warn_unused_ignores = true

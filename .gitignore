@@ -1,0 +1,37 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# vscode
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Web
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Secrets
+.env
+
+# Local data downloads (Azure Storage is the source of truth)
+data/
+.local/
+
+# Locally downloaded research papers; keep citations and links in Git
+docs/references/*.pdf
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+*.auto.tfvars
+crash.log
+crash.*.log

@@ -1,0 +1,12 @@
+resource_group_name     = "rg-geoqa-dev"
+storage_account_name    = "stgeoqaexample"
+container_registry_name = "acrgeoqaexample"
+location                = "West Europe"
+
+web_api_image_tag = "replace-with-immutable-build-tag"
+
+# GitHub OAuth public client id and Key Vault-backed secret references.
+github_client_id              = "replace-with-github-oauth-client-id"
+external_secrets_key_vault_id = "/subscriptions/replace/resourceGroups/replace/providers/Microsoft.KeyVault/vaults/replace"
+openai_api_key_secret_id      = "https://replace.vault.azure.net/secrets/openai-api-key"
+github_client_secret_id      = "https://replace.vault.azure.net/secrets/github-client-secret"
