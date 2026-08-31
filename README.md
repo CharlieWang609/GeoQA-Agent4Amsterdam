@@ -118,7 +118,33 @@ The local sandbox serves the production application against an in-memory
 copy of the catalog; the Vite dev server proxies the API and supplies a
 signed-in identity.
 
+
 ## License
 
 GPL-3.0-only (see [LICENSE](LICENSE)). Third-party components and data sources
 are listed in [NOTICES.md](NOTICES.md).
+
+## References
+
+The semantic core of this system builds on the QuAnGIS line of research:
+
+- Scheider, S., Nyamsuren, E., Kruiger, H., & Xu, H. (2021). Geo-analytical
+  question-answering with GIS. *International Journal of Digital Earth*,
+  14(1), 1–14. <https://doi.org/10.1080/17538947.2020.1738568>
+- Scheider, S., et al. (2020). Ontology of core concept data types for
+  answering geo-analytical questions. *Journal of Spatial Information
+  Science*, 20, 167–201. <https://doi.org/10.5311/JOSIS.2020.20.55>
+- Kruiger, H., et al. (2021). Loose programming of GIS workflows with
+  geo-analytical concepts. *Transactions in GIS*, 25(1), 424–449.
+  <https://doi.org/10.1111/tgis.12692>
+- Xu, H., Nyamsuren, E., Scheider, S., & Top, E. (2023). A grammar for
+  interpreting geo-analytical questions as concept transformations.
+  *International Journal of Geographical Information Science*, 37(2),
+  276–306. <https://doi.org/10.1080/13658816.2022.2077947>
+- Kasalica, V., & Lamprecht, A.-L. (2020). APE: A command-line tool and API
+  for automated workflow composition. *Computational Science – ICCS 2020*,
+  LNCS 12143. <https://doi.org/10.1007/978-3-030-50436-6_34>
+
+Software: [quangis-workflow](https://github.com/quangis/quangis-workflow)
+(abstraction vocabulary), [transforge](https://github.com/quangis/transforge)
+(CCT type inference)
