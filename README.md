@@ -76,7 +76,7 @@ and that decision doubles as the case-base retention gate.
   public sports locations, sports providers, gymnasiums, and swimming pools —
   ingested from official Amsterdam WFS services as immutable catalog
   snapshots.
-- - **GIS workflow enumeration is explicit BFS, not SAT-based synthesis.** The
+- **GIS workflow enumeration is explicit BFS, not SAT-based synthesis.** The
   type-directed fallback enumerates well-typed candidate GIS workflows by
   bounded breadth-first forward chaining (depth ≤ 4 over 55 abstraction
   signatures), which is sub-second at the current scale but grows
@@ -84,7 +84,9 @@ and that decision doubles as the case-base retention gate.
   mean replacing it with a SAT-based bounded synthesizer in the style of
   [APE](https://github.com/sanctuuary/APE), as used by the original QuAnGIS
   pipeline.
-- 
+- - **Vector only.** All registered operations are GeoPandas vector
+  computations.To do: raster tooling (rasterio-backed operations and raster layer
+  ingestion).
 - Questions outside this scope are rejected with diagnostics rather than
   answered.
 
