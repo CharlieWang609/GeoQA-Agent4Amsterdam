@@ -141,9 +141,7 @@ The semantic core of this system builds on the QuAnGIS line of research:
   interpreting geo-analytical questions as concept transformations.
   *International Journal of Geographical Information Science*, 37(2),
   276–306. <https://doi.org/10.1080/13658816.2022.2077947>
-- Kasalica, V., & Lamprecht, A.-L. (2020). APE: A command-line tool and API
-  for automated workflow composition. *Computational Science – ICCS 2020*,
-  LNCS 12143. <https://doi.org/10.1007/978-3-030-50436-6_34>
+
 
 Software: [quangis-workflow](https://github.com/quangis/quangis-workflow)
 (abstraction vocabulary), [transforge](https://github.com/quangis/transforge)
