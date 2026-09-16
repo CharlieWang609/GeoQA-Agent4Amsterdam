@@ -1,0 +1,15 @@
+.git
+.pixi
+.pytest_cache
+.mypy_cache
+.scratch
+**/__pycache__
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+**/.terraform
+*.tfstate
+*.tfstate.*
+.env
+data
+docs/references
